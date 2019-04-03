@@ -1,0 +1,34 @@
+{
+  "name": "Mines",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node node_modules/react-native/local-cli/cli.js start",
+    "test": "jest"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.123",
+    "@types/react-native-vector-icons": "^6.4.0",
+    "lodash": "^4.17.11",
+    "react": "16.8.3",
+    "react-native": "0.59.3",
+    "react-native-router-flux": "^4.0.6",
+    "react-native-vector-icons": "^6.4.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.4.0",
+    "@babel/runtime": "^7.4.2",
+    "@types/jest": "^24.0.11",
+    "@types/react": "^16.8.10",
+    "@types/react-native": "^0.57.42",
+    "@types/react-test-renderer": "^16.8.1",
+    "babel-jest": "^24.6.0",
+    "jest": "^24.6.0",
+    "metro-react-native-babel-preset": "^0.53.1",
+    "react-test-renderer": "16.8.3",
+    "typescript": "^3.4.1"
+  },
+  "jest": {
+    "preset": "react-native"
+  }
+}
