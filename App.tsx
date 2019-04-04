@@ -15,18 +15,34 @@ import _ from "lodash";
 
 interface Props {}
 interface State {
-  mines: number[];
+  mines: Point[];
   userMove: number[];
+}
+class Point {
+  public value: number = 0;
+  public type: string = "";
+  constructor(value: number, type: string) {
+    this.value = value;
+    this.type = type;
+  }
 }
 export default class App extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
 
     this.state = {
-      mines: [0, 0, 2, 0, 2, 2, 0, 0, 2],
+      mines: [],
       userMove: [0, 0, 0, 0, 0, 0, 0, 0, 0]
     };
   }
+
+componentDidMount() {
+
+  this.setState({mines:this.generateBoard(9)});
+  this.setState({mines:this.generateDistanceBetweenBombs()})
+  console.log(this.state.mines);
+}
+
   render() {
     return (
       <View style={styles.container}>
@@ -44,9 +60,10 @@ export default class App extends Component<Props, State> {
             paddingVertical: 10,
             paddingHorizontal: 20,
             margin: 10,
-            borderRadius:10
+            borderRadius: 10
           }}
-          onPress={()=>this.reset()}>
+          onPress={() => this.reset()}
+        >
           <Text>Reset</Text>
         </TouchableOpacity>
       </View>
@@ -62,13 +79,14 @@ export default class App extends Component<Props, State> {
         name = "bomb";
         break;
       case 3:
-        name = "times";
+        name = this.state.mines[item.index].value.toString();
         break;
     }
     return (
       <TouchableOpacity
         onPress={() => this.onSelect(item)}
-        onLongPress={() => this.onMark(item)}>
+        onLongPress={() => this.onMark(item)}
+      >
         <View
           style={{
             height: 60,
@@ -77,27 +95,29 @@ export default class App extends Component<Props, State> {
             alignItems: "center",
             backgroundColor: "red",
             borderRadius: 20
-          }}>
-          {name.length > 0 ? <FAIcon name={name} size={40} /> : null}
+          }}
+        >
+          {name.length > 0 ? (
+            item.item === 2 ? (
+              <FAIcon name={name} size={40} />
+            ) : (
+              <Text style={{ fontSize: 40 }}>{name}</Text>
+            )
+          ) : null}
         </View>
       </TouchableOpacity>
     );
   }
   onSelect = (item: ListRenderItemInfo<number>) => {
     let userMove: number[] = [...this.state.userMove];
-    if (this.state.mines[item.index] === 2) {
+    if (this.state.mines[item.index].type === "bomb") {
       userMove[item.index] = 2;
-    } else {
-      userMove[item.index] = 3;
-    }
-
-
-
-    if (this.state.mines[item.index] === 2) {
       Alert.alert("Lose", "you lose, try again!", [
         { text: "OK", onPress: () => console.log("OK Pressed") }
       ]);
       userMove = this.visibleAll();
+    } else {
+      userMove[item.index] = 3;
     }
 
     if (this.calculateWin(userMove) != 0) {
@@ -124,7 +144,7 @@ export default class App extends Component<Props, State> {
   calculateWin(userMove: number[]): number {
     return this.state.mines
       .map((item, index) => {
-        return { index: index, value: item };
+        return { index: index, value: item.type === "empty" ? 0 : 2 };
       })
       .filter(item => {
         return item.value === 0;
@@ -138,7 +158,7 @@ export default class App extends Component<Props, State> {
   }
   visibleAll(): number[] {
     return [...this.state.mines].map(item => {
-      if (item === 0) {
+      if (item.type === "empty") {
         return 3;
       }
       return 2;
@@ -146,6 +166,41 @@ export default class App extends Component<Props, State> {
   }
   reset() {
     this.setState({ userMove: [...this.state.userMove].fill(0) });
+  }
+  public generateDistanceBetweenBombs(): any {
+    let tab: any = [...this.state.mines].map(item => {
+      if (item.type === "bomb") {
+        return { value: 0, type: "bomb" };
+      }
+      return { value: 0, type: "empty" };
+    });
+    for (let x = 0; x < tab.length; x++) {
+      if (tab[x].type === "bomb") {
+        const position: number = x % 3;
+        [-4, -3, -2, -1, 1, 2, 3, 4].forEach(element => {
+          if (
+            x + element > -1 &&
+            x + element < tab.length &&
+            tab[x + element].type === "empty" &&
+            Math.abs(position - ((x + element) % 3)) <= 1
+          ) {
+            tab[x + element].value += 1;
+          }
+        });
+      }
+    }
+    return tab;
+  }
+  public generateBoard(length: number): any {
+    let tab: number[] = new Array(length);
+    tab.map(item => {
+      if (new Date().getTime() % 2 === 0) {
+        return new Point(0, "bomb");
+      } else{
+        return new Point(0, "empty");
+      }
+    });
+    return tab;
   }
 }
 
