@@ -36,16 +36,14 @@ export default class App extends Component<Props, State> {
     };
   }
 
-componentDidMount() {
-
-  this.setState({mines:this.generateBoard(9)});
-  this.setState({mines:this.generateDistanceBetweenBombs()})
-  console.log(this.state.mines);
-}
+  componentDidMount() {
+    this.newGame();
+  }
 
   render() {
     return (
       <View style={styles.container}>
+        <Text style={{ fontSize: 40, paddingBottom: 50 }}>Mines</Text>
         <View style={{ height: 180, width: 180 }}>
           <FlatList<number>
             data={this.state.userMove}
@@ -62,7 +60,7 @@ componentDidMount() {
             margin: 10,
             borderRadius: 10
           }}
-          onPress={() => this.reset()}
+          onPress={() => this.newGame()}
         >
           <Text>Reset</Text>
         </TouchableOpacity>
@@ -70,6 +68,7 @@ componentDidMount() {
     );
   }
   renderItem(item: ListRenderItemInfo<number>) {
+    console.log(this.state.userMove);
     let name: string = "";
     switch (item.item) {
       case 1:
@@ -85,7 +84,7 @@ componentDidMount() {
     return (
       <TouchableOpacity
         onPress={() => this.onSelect(item)}
-        onLongPress={() => this.onMark(item)}
+        // onLongPress={() => this.onMark(item)}
       >
         <View
           style={{
@@ -98,7 +97,7 @@ componentDidMount() {
           }}
         >
           {name.length > 0 ? (
-            item.item === 2 ? (
+            item.item < 3 ? (
               <FAIcon name={name} size={40} />
             ) : (
               <Text style={{ fontSize: 40 }}>{name}</Text>
@@ -118,15 +117,15 @@ componentDidMount() {
       userMove = this.visibleAll();
     } else {
       userMove[item.index] = 3;
+      if (this.calculateWin(userMove) != 0) {
+        userMove = this.visibleAll();
+
+        Alert.alert("You win", "Gratulation!", [
+          { text: "OK", onPress: () => console.log("OK Pressed") }
+        ]);
+      }
     }
 
-    if (this.calculateWin(userMove) != 0) {
-      userMove = this.visibleAll();
-
-      Alert.alert("You win", "Gratulation!", [
-        { text: "OK", onPress: () => console.log("OK Pressed") }
-      ]);
-    }
     this.setState({ userMove });
   };
   onMark = (item: ListRenderItemInfo<number>) => {
@@ -167,8 +166,8 @@ componentDidMount() {
   reset() {
     this.setState({ userMove: [...this.state.userMove].fill(0) });
   }
-  public generateDistanceBetweenBombs(): any {
-    let tab: any = [...this.state.mines].map(item => {
+  public generateDistanceBetweenBombs(tab: Point[]): any {
+    tab.map(item => {
       if (item.type === "bomb") {
         return { value: 0, type: "bomb" };
       }
@@ -192,15 +191,19 @@ componentDidMount() {
     return tab;
   }
   public generateBoard(length: number): any {
-    let tab: number[] = new Array(length);
-    tab.map(item => {
-      if (new Date().getTime() % 2 === 0) {
-        return new Point(0, "bomb");
-      } else{
-        return new Point(0, "empty");
+    return new Array(9).fill(0).map(item => {
+      if ((Math.random() * 10 + item).toFixed() % 2 === 0) {
+        return { value: 0, type: "bomb" };
       }
+      return { value: 0, type: "empty" };
     });
-    return tab;
+  }
+
+  newGame() {
+    this.reset();
+    this.setState({
+      mines: this.generateDistanceBetweenBombs(this.generateBoard(9))
+    });
   }
 }
 
