@@ -75,7 +75,6 @@ it('callculate ', () => {
       type: "empty"
     },
   ];
-  console.log(tab);
   expect(tab[0]).toEqual(result[0]);
   expect(tab).toEqual(result);
 });
